@@ -9,14 +9,12 @@
         android:layout_height="fill_parent"
         android:layout_gravity="center"
         tools:context=".MainActivity" />
-    
+      
     <VideoView
         android:id="@+id/video"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_gravity="center"
         tools:context=".MainActivity" />
-    
-   
 
 </FrameLayout>
