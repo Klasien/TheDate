@@ -3,6 +3,8 @@ package miraclethings.camvidtest;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.hardware.Camera;
+
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -20,10 +22,11 @@ public class MainActivity extends Activity implements PreviewSurface.Callback {
 	private miraclethings.camvidtest.PreviewSurface mSurface;
 	private VideoView mVideo;
 	private Timer mTimer;
-	private boolean mVideoShowing;
+	private boolean mFrontFacing;
 
 	private int mCurrentTimePoint;
 	private int[] mTimePoints;
+	private int t;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,8 +39,8 @@ public class MainActivity extends Activity implements PreviewSurface.Callback {
         
         mVideo = (VideoView) findViewById(R.id.video);
 
-        String uri = "android.resource://" + getPackageName() + "/" + R.raw.dateapp;
-        mVideo.setVideoURI(Uri.parse(uri));
+        //String uri = "android.resource://" + getPackageName() + "/" + R.raw.dateapp;
+        //mVideo.setVideoURI(Uri.parse(uri));
 
         mVideo.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             public void onCompletion(MediaPlayer mp) {
@@ -45,29 +48,30 @@ public class MainActivity extends Activity implements PreviewSurface.Callback {
                 mVideo.start(); //need to make transition seamless.
 
                 //mVideo.seekTo(90000);
+                
                 doSwitch();
             }
         });
         
         
-        mVideo.requestFocus();
+//        /mVideo.requestFocus();
         
-        mVideo.start();
+        //mVideo.start();
 //        mVideo.seekTo(90000);
         doSwitch(); // first show video
         
         mCurrentTimePoint = 0;
         mTimePoints = new int[8];
-        mTimePoints[0] = 96;
-        mTimePoints[1] = 100;
+        mTimePoints[0] = 0;
+        mTimePoints[1] = 20;
         
-        mTimePoints[2] = 115;
-        mTimePoints[3] = 120;
+        mTimePoints[2] = 40;
+        mTimePoints[3] = 60;
         
-        mTimePoints[4] = 128;
-        mTimePoints[5] = 131;
+        mTimePoints[4] = 80;
+        mTimePoints[5] = 100;
         
-        mTimePoints[6] = 140;
+        mTimePoints[6] = 120;
         mTimePoints[7] = 150;
         
 //        mTimePoints[0] = 2;
@@ -77,7 +81,9 @@ public class MainActivity extends Activity implements PreviewSurface.Callback {
 //        mTimePoints[4] = 10;
 //        mTimePoints[5] = 13;
         
-        mVideoShowing = true;
+        mFrontFacing = true;
+        
+        t = 0;
         
         mTimer = new Timer();
         mTimer.schedule(new TimerTask(){
@@ -98,23 +104,33 @@ public class MainActivity extends Activity implements PreviewSurface.Callback {
 	}
         
 	private void checkSwitch() {
-		int t = mVideo.getCurrentPosition() / 1000;
 		
 		if (mTimePoints[mCurrentTimePoint] < t) {
 			mCurrentTimePoint++;
 			Log.v(TAG, "SWITCH!!! " + t);
 			doSwitch();
 		}
+		t += 1;
+		if (t > 120) {
+			t = 0;
+			mCurrentTimePoint = 0;
+		}
 	}
 	
     private void doSwitch() {
-    	mVideoShowing = !mVideoShowing;
-    	
+    	mFrontFacing = !mFrontFacing;
+    	mSurface.setVisibility(View.VISIBLE);
+    	if (mFrontFacing) 
+    		mSurface.switchTo(Camera.CameraInfo.CAMERA_FACING_FRONT);
+    	else
+    		mSurface.switchTo(Camera.CameraInfo.CAMERA_FACING_BACK);
+    	/*
     	if (mVideoShowing) {
     		mSurface.setVisibility(View.INVISIBLE);
     	} else {
     		mSurface.setVisibility(View.VISIBLE);
     	}
+    	*/
     }
 
 	@Override

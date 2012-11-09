@@ -148,14 +148,34 @@ class PreviewSurface extends SurfaceView implements SurfaceHolder.Callback {
 		    mCamera.setDisplayOrientation(90);
     	}
     }
+
+    public void switchTo(int facing) {
+    	if (hasCamera) {
+    		mCamera.stopPreview();
+    		mCamera.release();
+        	hasCamera = false;
+
+        	mHolder = getHolder();
+            mHolder.addCallback(this);
+            mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+            mCallback.cameraReady();
+        }
+    	
+    	initCamera(facing);
+    	mCamera.startPreview();
+    }
     
     public void initCamera() {
+    	initCamera(Camera.CameraInfo.CAMERA_FACING_BACK);
+    }
+    
+    public void initCamera(int facing) {
     	
     	if (!hasCamera) {
 			try {
-				int idx = findFrontFacingCamera();
+				int idx = findCamera(facing);
 				//idx = 0;
-		    	Log.v(TAG, "Found front facing camera: " + idx);
+		    	Log.v(TAG, "Found camera: " + idx);
 		    	mCamera = Camera.open(idx);
 		    	hasCamera = true;
 			} catch (RuntimeException e) {
@@ -176,7 +196,7 @@ class PreviewSurface extends SurfaceView implements SurfaceHolder.Callback {
     	}
     }
 
-    private int findFrontFacingCamera() 
+    private int findCamera(int facing) 
     {
         int cameraCount = 0;
         int result = 0;
@@ -185,7 +205,7 @@ class PreviewSurface extends SurfaceView implements SurfaceHolder.Callback {
         cameraCount = Camera.getNumberOfCameras();
         for ( int camIdx = 0; camIdx < cameraCount; camIdx++ ) {
             Camera.getCameraInfo( camIdx, cameraInfo );
-            if ( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT  ) {
+            if ( cameraInfo.facing == facing ) {
             	result = camIdx;
             	break;
             }
@@ -193,26 +213,7 @@ class PreviewSurface extends SurfaceView implements SurfaceHolder.Callback {
 
         return result;
     }
-    
-    public void lightOff() {
-    	if (hasSurface && hasCamera) {
-	        mParameters.setFlashMode(Parameters.FLASH_MODE_OFF);
-	        mCamera.setParameters(mParameters);
-    	}
-    }
-
-    public void lightOn() {
-    	if (this.isShown() && hasCamera) {
-    		if (mParameters == null) {
-    			setParameters();
-    		}
-	        mParameters.setFlashMode(Parameters.FLASH_MODE_TORCH);
-	        mCamera.setParameters(mParameters);
-    	} else {
-    		initCamera();
-    	}
-    }
-    
+        
     public boolean hasCamera() {
     	return hasCamera;
     }
